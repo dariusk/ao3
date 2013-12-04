@@ -1,3 +1,6 @@
+var gim = require('google-images');
+var exec = require('child_process').exec;
+var fs = require('fs');
 var request = require('request');
 var cheerio = require('cheerio');
 var _ = require('underscore');
@@ -14,6 +17,30 @@ Array.prototype.pickRemove = function() {
   var index = Math.floor(Math.random()*this.length);
   return this.splice(index,1)[0];
 };
+
+function getImages(first, second) {
+  var dfd = _.Deferred();
+  gim.search(first, { page:1, callback: function (err, images) {
+    var url1 = _.pluck(images,'url').pick();
+    gim.search(second, { page:1, callback: function (err, images) {
+      var url2 = _.pluck(images,'url').pick();
+      console.log(url1, url2);
+      var filetype1 = url1.match(/\.\w\w\w\w?$/)[0].toLowerCase();
+      var filetype2 = url2.match(/\.\w\w\w\w?$/)[0].toLowerCase();
+      var stream1 = fs.createWriteStream('./1' + filetype1);
+      var stream2 = fs.createWriteStream('./2' + filetype2);
+      stream1.on('close', function() {
+        var r = request(url2).pipe(stream2);
+      });
+      stream2.on('close', function() {
+        console.log('done');
+        dfd.resolve('./1' + filetype1, './2' + filetype2);
+      });
+      var r = request(url1).pipe(stream1);
+    }});
+  }});
+  return dfd.promise();
+}
 
 function generate() {
   var dfd = new _.Deferred();
@@ -38,18 +65,48 @@ function generate() {
   'http://archiveofourown.org/tags/Doctor%20Who%20*a*%20Related%20Fandoms/works',
   'http://archiveofourown.org/tags/Battlestar%20Galactica%20(2003)/works'
   ];
-  var result = [];
+  var result = [],
+      resultCount = 0;
   _.each(urls, function (url) {
     request(url, function (error, response, body) {
       if (!error && response.statusCode == 200) {
         var $ = cheerio.load(body);
         // parse stuff and resolve
-        result.push($('#tag_category_character > ul > li').map(function(ind, el) { return($(el).text().replace(/\(.*\)/,'').trim())}));
+        var fandom = $('h2.heading > a').text();
+        fandom = fandom.replace(/[\-\(\:\&].*$/,'');
+        if (fandom === 'Bandom') {
+          fandom = '';
+        }
+        console.log(fandom);
+        var names = $('#tag_category_character > ul > li').map(function(ind, el) { return($(el).text().replace(/\(.*\)/,'').trim())});
+        names = _.map(names, function(name) {
+          return {
+            name: name,
+            fandom: fandom
+          };
+        });
+        result.push(names);
+        resultCount++;
         if (result.length === urls.length) {
           result = _.flatten(result);
-          for (var i=0; i<20; i++) {
-            console.log(result.pick() + ' and ' + result.pick());
-          }
+          var first = result.pick();
+          var second = result.pick();
+          getImages('"' + first.name + '" ' + first.fandom, '"' + second.name + '" ' + second.fandom)
+            .done(function(file1, file2) {
+              console.log(file1, file2);
+              exec('mogrify -resize 200x200^ -gravity center -extent 200x200 ' + file1).on('close', function() {
+                exec('mogrify -resize 200x200^ -gravity center -extent 200x200 ' + file2).on('close', function() {
+                  exec('convert ' + file1 + ' ' + file2 + ' +append out.png').on('close', function() {
+                    exec('composite -gravity center heart.gif out.png out2.png').on('close', function() {
+                      exec('mv out2.png ~/Downloads');
+                      console.log('done');
+                    });
+                  });
+                });
+              });
+
+            });
+          console.log(first.name + ' and ' + second.name);
         }
       }
       else {
