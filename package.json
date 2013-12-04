@@ -32,7 +32,8 @@
     "request": "~2.27.0",
     "cheerio": "~0.12.2",
     "google-images": "~0.1.0",
-    "ent": "~0.1.0"
+    "ent": "~0.1.0",
+    "node-twitter": "https://github.com/dariusk/node-twitter/archive/master.tar.gz"
   },
   "devDependencies": {
     "grunt-contrib-jshint": "~0.6.0",

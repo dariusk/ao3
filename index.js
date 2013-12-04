@@ -10,6 +10,16 @@ var Twit = require('twit');
 var T = new Twit(require('./config.js'));
 var wordfilter = require('wordfilter');
 var ent = require('ent');
+var conf = require('./config.js');
+// need to use this OTHER twitter lib to post photos, sigh
+var Twitter = require('node-twitter');
+var twitterRestClient = new Twitter.RestClient(
+  conf.consumer_key,
+  conf.consumer_secret,
+  conf.access_token,
+  conf.access_token_secret
+);
+
 
 Array.prototype.pick = function() {
   return this[Math.floor(Math.random()*this.length)];
@@ -128,8 +138,27 @@ function generate() {
                     exec('mogrify -resize 200x200^ -gravity center -extent 200x200 ' + file2).on('close', function() {
                       exec('convert ' + file1 + ' ' + file2 + ' +append out.png').on('close', function() {
                         exec('composite -gravity center heart.gif out.png out2.png').on('close', function() {
-                          exec('mv out2.png ~/Downloads');
-                          console.log(first.name + ' and ' + second.name + ' in ' + settings.pick());
+                          exec('cp out2.png ~/Downloads');
+                          var myTweet = first.name + ' and ' + second.name + ' in ' + settings.pick();
+                          console.log(myTweet);
+                          // Tweet it
+                          twitterRestClient.statusesUpdateWithMedia(
+                            {
+                            'status': myTweet,
+                            'media[]': 'out2.png'
+                            },
+                            function(error, result) {
+                            console.log('well...');
+                            if (error)
+                            {
+                            console.log('Error: ' + (error.code ? error.code + ' ' + error.message : error.message));
+                            }
+
+                            if (result)
+                            {
+                            console.log(result);
+                            }
+                            });
                           console.log('done');
                         });
                       });
