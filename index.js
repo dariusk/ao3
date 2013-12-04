@@ -22,8 +22,10 @@ function getImages(first, second) {
   var dfd = _.Deferred();
   gim.search(first, { page:1, callback: function (err, images) {
     var url1 = _.pluck(images,'url').pick();
+    ur1l = url1.replace(/\%3F.*/,'');
     gim.search(second, { page:1, callback: function (err, images) {
       var url2 = _.pluck(images,'url').pick();
+      ur12 = url2.replace(/\%3F.*/,'');
       console.log(url1, url2);
       var filetype1 = url1.match(/\.\w\w\w\w?$/)[0].toLowerCase();
       var filetype2 = url2.match(/\.\w\w\w\w?$/)[0].toLowerCase();
