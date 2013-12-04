@@ -7,7 +7,9 @@ var _ = require('underscore');
 _.mixin( require('underscore.deferred') );
 var inflection = require('inflection');
 var Twit = require('twit');
+var T = new Twit(require('./config.js'));
 var wordfilter = require('wordfilter');
+var ent = require('ent');
 
 Array.prototype.pick = function() {
   return this[Math.floor(Math.random()*this.length)];
@@ -19,6 +21,7 @@ Array.prototype.pickRemove = function() {
 };
 
 function getImages(first, second) {
+  console.log(first, second);
   var dfd = _.Deferred();
   gim.search(first, { page:1, callback: function (err, images) {
     var url1 = _.pluck(images,'url').pick();
@@ -67,6 +70,7 @@ function generate() {
   'http://archiveofourown.org/tags/Doctor%20Who%20*a*%20Related%20Fandoms/works',
   'http://archiveofourown.org/tags/Battlestar%20Galactica%20(2003)/works'
   ];
+
   var result = [],
       resultCount = 0;
   _.each(urls, function (url) {
@@ -76,10 +80,15 @@ function generate() {
         // parse stuff and resolve
         var fandom = $('h2.heading > a').text();
         fandom = fandom.replace(/[\-\(\:\&].*$/,'');
+        // "bandom" gets weird results and these dudes are famous enough to have good pics on their own
         if (fandom === 'Bandom') {
           fandom = '';
         }
-        console.log(fandom);
+        // "DCU" gets you a toy line, "DC" gets better results
+        if (fandom === 'DCU') {
+          fandom = 'DC';
+        }
+//        console.log(fandom);
         var names = $('#tag_category_character > ul > li').map(function(ind, el) { return($(el).text().replace(/\(.*\)/,'').trim())});
         names = _.map(names, function(name) {
           return {
@@ -89,26 +98,46 @@ function generate() {
         });
         result.push(names);
         resultCount++;
+        // if we've gathered all the results
         if (result.length === urls.length) {
-          result = _.flatten(result);
-          var first = result.pick();
-          var second = result.pick();
-          getImages('"' + first.name + '" ' + first.fandom, '"' + second.name + '" ' + second.fandom)
-            .done(function(file1, file2) {
-              console.log(file1, file2);
-              exec('mogrify -resize 200x200^ -gravity center -extent 200x200 ' + file1).on('close', function() {
-                exec('mogrify -resize 200x200^ -gravity center -extent 200x200 ' + file2).on('close', function() {
-                  exec('convert ' + file1 + ' ' + file2 + ' +append out.png').on('close', function() {
-                    exec('composite -gravity center heart.gif out.png out2.png').on('close', function() {
-                      exec('mv out2.png ~/Downloads');
-                      console.log('done');
+          // Grab potential settings from twitter
+          _.when(
+              search('"wish I was in"'),
+              search('"pretend we\'re in"')
+            )
+            .done(function() {
+              var res = _.flatten(arguments);
+              console.log(res);
+              var settings = _.chain(res)
+                .map(function(el) {
+                  return inflection.titleize(el.replace(/(\.|,|!|\?).*/,'').trim());
+                })
+                .reject(function(el) {
+                  return el.match(/\si\s/i) !== null || el.length > 25 || el.length <= 2;
+                })
+                .value();
+              //console.log(settings);
+
+              result = _.flatten(result);
+              var first = result.pick();
+              var second = result.pick();
+              getImages('"' + first.name + '" ' + first.fandom, '"' + second.name + '" ' + second.fandom)
+                .done(function(file1, file2) {
+                  console.log(file1, file2);
+                  exec('mogrify -resize 200x200^ -gravity center -extent 200x200 ' + file1).on('close', function() {
+                    exec('mogrify -resize 200x200^ -gravity center -extent 200x200 ' + file2).on('close', function() {
+                      exec('convert ' + file1 + ' ' + file2 + ' +append out.png').on('close', function() {
+                        exec('composite -gravity center heart.gif out.png out2.png').on('close', function() {
+                          exec('mv out2.png ~/Downloads');
+                          console.log(first.name + ' and ' + second.name + ' in ' + settings.pick());
+                          console.log('done');
+                        });
+                      });
                     });
                   });
-                });
-              });
 
+                });
             });
-          console.log(first.name + ' and ' + second.name);
         }
       }
       else {
@@ -116,7 +145,6 @@ function generate() {
       }
     });
   });
-
   return dfd.promise();
 }
 
@@ -137,6 +165,35 @@ function tweet() {
     }
   });
 }
+
+function search(term) {
+  var dfd = new _.Deferred();
+  T.get('search/tweets', { q: term, count: 100 }, function(err, reply) {
+    var tweets = reply.statuses;
+    tweets = _.chain(tweets)
+      .map(function(el) {
+        if (el.retweeted_status) {
+          return ent.decode(el.retweeted_status.text);
+        }
+        else {
+          return ent.decode(el.text);
+        }
+      })
+      .map(function(el) {
+        var reg = new RegExp('.*'+term.replace(/"/g,''),'i');
+        return el.replace(reg,'');
+      })
+      .reject(function(el) {
+        // filtering out substring of "Antarctica" because of a stupid song lyric
+        return (el.indexOf('#') > -1 || el.indexOf('http') > -1 || el.indexOf('@') > -1 || el.indexOf('"') > -1 || el.indexOf(':') > -1 || el.toLowerCase().indexOf('antar') > -1);
+      })
+      .uniq()
+      .value();
+    dfd.resolve(tweets);
+  });
+  return dfd.promise();
+}
+
 
 // Tweet every 60 minutes
 setInterval(function () {
