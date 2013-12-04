@@ -141,24 +141,21 @@ function generate() {
                           exec('cp out2.png ~/Downloads');
                           var myTweet = first.name + ' and ' + second.name + ' in ' + settings.pick();
                           console.log(myTweet);
-                          // Tweet it
-                          twitterRestClient.statusesUpdateWithMedia(
-                            {
-                            'status': myTweet,
-                            'media[]': 'out2.png'
-                            },
-                            function(error, result) {
-                            console.log('well...');
-                            if (error)
-                            {
-                            console.log('Error: ' + (error.code ? error.code + ' ' + error.message : error.message));
-                            }
-
-                            if (result)
-                            {
-                            console.log(result);
-                            }
+                          if (!wordfilter.blacklisted(myTweet)) {
+                            // Tweet it
+                            twitterRestClient.statusesUpdateWithMedia({
+                                'status': myTweet,
+                                'media[]': 'out2.png'
+                              },
+                              function(error, result) {
+                                if (error) {
+                                  console.log('Error: ' + (error.code ? error.code + ' ' + error.message : error.message));
+                                }
+                                if (result) {
+                                  console.log(result);
+                                }
                             });
+                          }
                           console.log('done');
                         });
                       });
@@ -175,24 +172,6 @@ function generate() {
     });
   });
   return dfd.promise();
-}
-
-function tweet() {
-  generate().then(function(myTweet) {
-    if (!wordfilter.blacklisted(myTweet)) {
-      console.log(myTweet);
-      /*
-      T.post('statuses/update', { status: myTweet }, function(err, reply) {
-        if (err) {
-          console.log('error:', err);
-        }
-        else {
-          console.log('reply:', reply);
-        }
-      });
-      */
-    }
-  });
 }
 
 function search(term) {
@@ -224,15 +203,5 @@ function search(term) {
 }
 
 
-// Tweet every 60 minutes
-setInterval(function () {
-  try {
-    tweet();
-  }
-  catch (e) {
-    console.log(e);
-  }
-}, 1000 * 60 * 60);
-
-// Tweet once on initialization
-tweet();
+// tweet once, this is meant to be run on a cron job
+generate();
