@@ -19,7 +19,18 @@ var twitterRestClient = new Twitter.RestClient(
   conf.access_token,
   conf.access_token_secret
 );
+var Tumblr = require('tumblrwks');
+var tumblr = new Tumblr(
+  {
+    consumerKey:    conf.tumblr_consumer_key,
+    consumerSecret: conf.tumblr_consumer_secret,
+    accessToken:    conf.tumblr_access_token,
+    accessSecret:   conf.tumblr_access_token_secret
+  }, "au-prompts.tumblr.com"
+  // you can specify the blog url now or the time you want to use
+);
 
+var debug = false;
 
 Array.prototype.pick = function() {
   return this[Math.floor(Math.random()*this.length)];
@@ -141,7 +152,13 @@ function generate() {
                           exec('rm 1* && rm 2* && cp out2.png ~/Downloads');
                           var myTweet = first.name + ' and ' + second.name + ' in ' + settings.pick();
                           console.log(myTweet);
-                          if (!wordfilter.blacklisted(myTweet)) {
+                          if (first.fandom === 'Doctor Who') {
+                            first.fandom = 'Doctor Who Universe';
+                          }
+                          if (second.fandom === 'Doctor Who') {
+                            second.fandom = 'Doctor Who Universe';
+                          }
+                          if (!wordfilter.blacklisted(myTweet) && !debug) {
                             // Tweet it
                             twitterRestClient.statusesUpdateWithMedia({
                                 'status': myTweet,
@@ -153,8 +170,19 @@ function generate() {
                                 }
                                 if (result) {
                                   console.log(result);
+                                  // Tumblr it
+                                  tumblr.post('/post', {
+                                    type: 'photo',
+                                    source: result.entities.media[0].media_url,
+                                    caption: myTweet,
+                                    tags: ['AU Prompts',first.name,second.name,first.fandom,second.fandom,first.name+'/'+second.name].join(',')
+                                    }, function(err, json){
+                                    console.log(json, err);
+                                  });  
                                 }
                             });
+
+
                           }
                           console.log('done');
                         });
