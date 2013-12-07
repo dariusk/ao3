@@ -148,7 +148,11 @@ function generate() {
                   exec('mogrify -resize 200x200^ -gravity center -extent 200x200 ' + file1).on('close', function() {
                     exec('mogrify -resize 200x200^ -gravity center -extent 200x200 ' + file2).on('close', function() {
                       exec('convert ' + file1 + ' ' + file2 + ' +append out.png').on('close', function() {
-                        exec('composite -gravity center heart.gif out.png out2.png').on('close', function() {
+                        var image = [
+                          'heart.gif',
+                          'broken_heart.gif'
+                        ].pick();
+                        exec('composite -gravity center ' + image + ' out.png out2.png').on('close', function() {
                           exec('rm 1* && rm 2* && cp out2.png ~/Downloads');
                           var myTweet = first.name + ' and ' + second.name + ' in ' + settings.pick();
                           console.log(myTweet);
