@@ -72,7 +72,8 @@ function generate() {
   var dfd = new _.Deferred();
   var urls = ['http://archiveofourown.org/tags/Harry%20Potter%20-%20J*d*%20K*d*%20Rowling/works',
   'http://archiveofourown.org/tags/Sherlock%20Holmes%20*a*%20Related%20Fandoms/works',
-  'http://archiveofourown.org/tags/Arthurian%20Mythology%20*a*%20Related%20Fandoms/works',
+  'http://archiveofourown.org/tags/Lost/works',
+  'http://archiveofourown.org/tags/Scandal%20(TV)/works',
   'http://archiveofourown.org/tags/TOLKIEN%20J*d*%20R*d*%20R*d*%20-%20Works/works',
   'http://archiveofourown.org/tags/Les%20Mis%C3%A9rables%20-%20All%20Media%20Types/works',
   'http://archiveofourown.org/tags/Marvel/works',
