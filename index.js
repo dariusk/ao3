@@ -146,8 +146,8 @@ function generate() {
               getImages('"' + first.name + '" ' + first.fandom, '"' + second.name + '" ' + second.fandom)
                 .done(function(file1, file2) {
                   console.log(file1, file2);
-                  exec('mogrify -resize 200x200^ -gravity center -extent 200x200 ' + file1).on('close', function() {
-                    exec('mogrify -resize 200x200^ -gravity center -extent 200x200 ' + file2).on('close', function() {
+                  exec('mogrify -resize 200x200^ -gravity center -extent 200x200 ' + file1 + '[0]').on('close', function() {
+                    exec('mogrify -resize 200x200^ -gravity center -extent 200x200 ' + file2 + '[0]').on('close', function() {
                       exec('convert ' + file1 + ' ' + file2 + ' +append out.png').on('close', function() {
                         var image = [
                           'heart.gif',
