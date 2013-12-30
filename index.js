@@ -78,7 +78,6 @@ function generate() {
   'http://archiveofourown.org/tags/Les%20Mis%C3%A9rables%20-%20All%20Media%20Types/works',
   'http://archiveofourown.org/tags/Marvel/works',
   'http://archiveofourown.org/tags/One%20Direction%20(Band)/works',
-  'http://archiveofourown.org/tags/Bandom/works',
   'http://archiveofourown.org/tags/DCU/works',
   'http://archiveofourown.org/tags/Supernatural/works',
   'http://archiveofourown.org/tags/Dragon%20Age%20-%20All%20Media%20Types/works',
@@ -102,10 +101,6 @@ function generate() {
         // parse stuff and resolve
         var fandom = $('h2.heading > a').text();
         fandom = fandom.replace(/[\-\(\:\&].*$/,'');
-        // "bandom" gets weird results and these dudes are famous enough to have good pics on their own
-        if (fandom === 'Bandom') {
-          fandom = '';
-        }
         // "DCU" gets you a toy line, "DC" gets better results
         if (fandom === 'DCU') {
           fandom = 'DC';
