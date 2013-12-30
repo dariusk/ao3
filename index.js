@@ -74,8 +74,6 @@ function generate() {
   'http://archiveofourown.org/tags/Sherlock%20Holmes%20*a*%20Related%20Fandoms/works',
   'http://archiveofourown.org/tags/Lost/works',
   'http://archiveofourown.org/tags/Scandal%20(TV)/works',
-  'http://archiveofourown.org/tags/TOLKIEN%20J*d*%20R*d*%20R*d*%20-%20Works/works',
-  'http://archiveofourown.org/tags/Les%20Mis%C3%A9rables%20-%20All%20Media%20Types/works',
   'http://archiveofourown.org/tags/Marvel/works',
   'http://archiveofourown.org/tags/One%20Direction%20(Band)/works',
   'http://archiveofourown.org/tags/DCU/works',
@@ -89,7 +87,22 @@ function generate() {
   'http://archiveofourown.org/tags/Star%20Trek:%20The%20Next%20Generation/works',
   'http://archiveofourown.org/tags/Game%20of%20Thrones%20(TV)/works',
   'http://archiveofourown.org/tags/Doctor%20Who%20*a*%20Related%20Fandoms/works',
-  'http://archiveofourown.org/tags/Battlestar%20Galactica%20(2003)/works'
+  'http://archiveofourown.org/tags/The%20Lord%20of%20the%20Rings%20(Movies)/works',
+  'http://archiveofourown.org/tags/Battlestar%20Galactica%20(2003)/works',
+  'http://archiveofourown.org/tags/Buffy%20the%20Vampire%20Slayer/works',
+  'http://archiveofourown.org/tags/Friday%20Night%20Lights/works',
+  'http://archiveofourown.org/tags/The%20X-Files/works',
+  'http://archiveofourown.org/tags/due%20South/works',
+  'http://archiveofourown.org/tags/Community%20(TV)/works',
+  'http://archiveofourown.org/tags/Gilmore%20Girls/works',
+  'http://archiveofourown.org/tags/Once%20Upon%20a%20Time%20(TV)/works',
+  'http://archiveofourown.org/tags/Parks%20and%20Recreation/works',
+  'http://archiveofourown.org/tags/Sailor%20Moon%20-%20All%20Media%20Types/works',
+  'http://archiveofourown.org/tags/Vampire%20Diaries%20(TV)/works',
+  'http://archiveofourown.org/tags/Veronica%20Mars%20(TV)/works',
+  'http://archiveofourown.org/tags/Twilight%20Series%20-%20All%20Media%20Types/works',
+  'http://archiveofourown.org/tags/The%20West%20Wing/works',
+  'http://archiveofourown.org/tags/Xena:%20Warrior%20Princess/works'
   ];
 
   var result = [],
@@ -100,7 +113,7 @@ function generate() {
         var $ = cheerio.load(body);
         // parse stuff and resolve
         var fandom = $('h2.heading > a').text();
-        fandom = fandom.replace(/[\-\(\:\&].*$/,'');
+        fandom = fandom.replace(/[\-\(\:\&\|].*$/,'');
         // "DCU" gets you a toy line, "DC" gets better results
         if (fandom === 'DCU') {
           fandom = 'DC';
