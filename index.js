@@ -102,7 +102,8 @@ function generate() {
   'http://archiveofourown.org/tags/Veronica%20Mars%20(TV)/works',
   'http://archiveofourown.org/tags/Twilight%20Series%20-%20All%20Media%20Types/works',
   'http://archiveofourown.org/tags/The%20West%20Wing/works',
-  'http://archiveofourown.org/tags/Xena:%20Warrior%20Princess/works'
+  'http://archiveofourown.org/tags/Xena:%20Warrior%20Princess/works',
+  'http://archiveofourown.org/tags/Hetalia:%20Axis%20Powers/works'
   ];
 
   var result = [],
