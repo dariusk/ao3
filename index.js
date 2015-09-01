@@ -103,7 +103,9 @@ function generate() {
   'http://archiveofourown.org/tags/Twilight%20Series%20-%20All%20Media%20Types/works',
   'http://archiveofourown.org/tags/The%20West%20Wing/works',
   'http://archiveofourown.org/tags/Xena:%20Warrior%20Princess/works',
-  'http://archiveofourown.org/tags/Hetalia:%20Axis%20Powers/works'
+  'http://archiveofourown.org/tags/Hetalia:%20Axis%20Powers/works',
+  'http://archiveofourown.org/tags/%E5%BC%B1%E8%99%AB%E3%83%9A%E3%83%80%E3%83%AB%20%7C%20Yowamushi%20Pedal/works',
+  'http://archiveofourown.org/tags/Haikyuu!!/works'
   ];
 
   var result = [],
