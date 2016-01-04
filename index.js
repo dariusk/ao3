@@ -1,4 +1,3 @@
-var gim = require('google-images');
 var exec = require('child_process').exec;
 var fs = require('fs');
 var request = require('request');
@@ -29,6 +28,7 @@ var tumblr = new Tumblr(
   }, "au-prompts.tumblr.com"
   // you can specify the blog url now or the time you want to use
 );
+var Bing = require('node-bing-api')({ accKey: conf.bingKey});
 
 var debug = false;
 
@@ -44,15 +44,15 @@ Array.prototype.pickRemove = function() {
 function getImages(first, second) {
   console.log(first, second);
   var dfd = _.Deferred();
-  gim.search(first, { page:1, callback: function (err, images) {
-    var url1 = _.pluck(images,'url').pick();
+  Bing.images(first, {skip: Math.floor(Math.random()*5)}, function(error, response, body){
+    var url1 = body.d.results[Math.floor(Math.random()*3)].MediaUrl;
     ur1l = url1.replace(/\%3F.*/,'');
-    gim.search(second, { page:1, callback: function (err, images) {
-      var url2 = _.pluck(images,'url').pick();
+    Bing.images(second, {skip: Math.floor(Math.random()*5)}, function(error, response, body){
+      var url2 = body.d.results[Math.floor(Math.random()*3)].MediaUrl;
       ur12 = url2.replace(/\%3F.*/,'');
       console.log(url1, url2);
-      var filetype1 = url1.match(/\.\w\w\w\w?$/)[0].toLowerCase();
-      var filetype2 = url2.match(/\.\w\w\w\w?$/)[0].toLowerCase();
+      var filetype1 = '.png';//url1.match(/\.\w\w\w\w?$/)[0].toLowerCase();
+      var filetype2 = '.png';//url2.match(/\.\w\w\w\w?$/)[0].toLowerCase();
       var stream1 = fs.createWriteStream('./1' + filetype1);
       var stream2 = fs.createWriteStream('./2' + filetype2);
       stream1.on('close', function() {
@@ -63,8 +63,8 @@ function getImages(first, second) {
         dfd.resolve('./1' + filetype1, './2' + filetype2);
       });
       var r = request(url1).pipe(stream1);
-    }});
-  }});
+    });
+  });
   return dfd.promise();
 }
 
